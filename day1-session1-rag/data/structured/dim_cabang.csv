@@ -1,0 +1,68 @@
+cabang_id,nama_cabang,kota,provinsi,region,tipe_cabang,jumlah_karyawan,tanggal_berdiri,status_aktif
+CAB0001,Bank Nusantara KC Jakarta Pusat,Jakarta Pusat,DKI Jakarta,Region Jakarta,KC,11,2016-08-18,Aktif
+CAB0002,Bank Nusantara KC Jakarta Pusat 2,Jakarta Pusat,DKI Jakarta,Region Jakarta,KC,36,2003-02-17,Aktif
+CAB0003,Bank Nusantara KK Jakarta Pusat 3,Jakarta Pusat,DKI Jakarta,Region Jakarta,KK,28,2020-01-04,Aktif
+CAB0004,Bank Nusantara KCP Jakarta Selatan,Jakarta Selatan,DKI Jakarta,Region Jakarta,KCP,18,2000-09-17,Aktif
+CAB0005,Bank Nusantara KC Jakarta Barat,Jakarta Barat,DKI Jakarta,Region Jakarta,KC,37,2011-05-02,Tidak Aktif
+CAB0006,Bank Nusantara KCP Jakarta Utara,Jakarta Utara,DKI Jakarta,Region Jakarta,KCP,11,2016-01-22,Aktif
+CAB0007,Bank Nusantara KC Jakarta Timur,Jakarta Timur,DKI Jakarta,Region Jakarta,KC,65,2013-03-20,Aktif
+CAB0008,Bank Nusantara KC Jakarta Timur 2,Jakarta Timur,DKI Jakarta,Region Jakarta,KC,105,2018-01-27,Aktif
+CAB0009,Bank Nusantara KCP Bandung,Bandung,Jawa Barat,Region Jawa Barat,KCP,15,2006-03-26,Aktif
+CAB0010,Bank Nusantara KC Bandung 2,Bandung,Jawa Barat,Region Jawa Barat,KC,105,2007-07-20,Aktif
+CAB0011,Bank Nusantara KC Bandung 3,Bandung,Jawa Barat,Region Jawa Barat,KC,56,2002-03-03,Aktif
+CAB0012,Bank Nusantara KCP Bekasi,Bekasi,Jawa Barat,Region Jawa Barat,KCP,13,2018-02-06,Aktif
+CAB0013,Bank Nusantara KK Bekasi 2,Bekasi,Jawa Barat,Region Jawa Barat,KK,19,2012-01-10,Aktif
+CAB0014,Bank Nusantara KC Depok,Depok,Jawa Barat,Region Jawa Barat,KC,78,2006-07-29,Tidak Aktif
+CAB0015,Bank Nusantara KCP Depok 2,Depok,Jawa Barat,Region Jawa Barat,KCP,23,2004-04-24,Aktif
+CAB0016,Bank Nusantara KK Bogor,Bogor,Jawa Barat,Region Jawa Barat,KK,12,2017-05-03,Aktif
+CAB0017,Bank Nusantara KC Cirebon,Cirebon,Jawa Barat,Region Jawa Barat,KC,118,2002-04-07,Aktif
+CAB0018,Bank Nusantara KCP Tasikmalaya,Tasikmalaya,Jawa Barat,Region Jawa Barat,KCP,25,2018-09-16,Aktif
+CAB0019,Bank Nusantara KC Tasikmalaya 2,Tasikmalaya,Jawa Barat,Region Jawa Barat,KC,55,2007-12-20,Aktif
+CAB0020,Bank Nusantara KCP Semarang,Semarang,Jawa Tengah,Region Jawa Tengah,KCP,27,2021-01-03,Aktif
+CAB0021,Bank Nusantara KCP Semarang 2,Semarang,Jawa Tengah,Region Jawa Tengah,KCP,25,2003-11-02,Aktif
+CAB0022,Bank Nusantara KK Semarang 3,Semarang,Jawa Tengah,Region Jawa Tengah,KK,12,2003-08-31,Aktif
+CAB0023,Bank Nusantara KCP Solo,Solo,Jawa Tengah,Region Jawa Tengah,KCP,25,2015-06-08,Aktif
+CAB0024,Bank Nusantara KC Solo 2,Solo,Jawa Tengah,Region Jawa Tengah,KC,95,2007-04-10,Aktif
+CAB0025,Bank Nusantara KC Yogyakarta,Yogyakarta,Jawa Tengah,Region Jawa Tengah,KC,111,2007-01-28,Aktif
+CAB0026,Bank Nusantara KC Purwokerto,Purwokerto,Jawa Tengah,Region Jawa Tengah,KC,35,2020-06-24,Aktif
+CAB0027,Bank Nusantara KK Purwokerto 2,Purwokerto,Jawa Tengah,Region Jawa Tengah,KK,15,2004-10-07,Aktif
+CAB0028,Bank Nusantara KK Magelang,Magelang,Jawa Tengah,Region Jawa Tengah,KK,19,2003-03-16,Aktif
+CAB0029,Bank Nusantara KC Magelang 2,Magelang,Jawa Tengah,Region Jawa Tengah,KC,39,2016-09-15,Aktif
+CAB0030,Bank Nusantara KCP Surabaya,Surabaya,Jawa Timur,Region Jawa Timur,KCP,28,2013-02-09,Aktif
+CAB0031,Bank Nusantara KCP Surabaya 2,Surabaya,Jawa Timur,Region Jawa Timur,KCP,17,2008-02-13,Aktif
+CAB0032,Bank Nusantara KC Surabaya 3,Surabaya,Jawa Timur,Region Jawa Timur,KC,73,2011-01-25,Aktif
+CAB0033,Bank Nusantara KC Malang,Malang,Jawa Timur,Region Jawa Timur,KC,27,2014-01-27,Aktif
+CAB0034,Bank Nusantara KCP Sidoarjo,Sidoarjo,Jawa Timur,Region Jawa Timur,KCP,24,2001-06-04,Aktif
+CAB0035,Bank Nusantara KCP Sidoarjo 2,Sidoarjo,Jawa Timur,Region Jawa Timur,KCP,24,2010-07-01,Aktif
+CAB0036,Bank Nusantara KCP Sidoarjo 3,Sidoarjo,Jawa Timur,Region Jawa Timur,KCP,22,2019-04-22,Aktif
+CAB0037,Bank Nusantara KK Kediri,Kediri,Jawa Timur,Region Jawa Timur,KK,8,2015-04-16,Aktif
+CAB0038,Bank Nusantara KCP Kediri 2,Kediri,Jawa Timur,Region Jawa Timur,KCP,29,2014-05-17,Aktif
+CAB0039,Bank Nusantara KC Kediri 3,Kediri,Jawa Timur,Region Jawa Timur,KC,45,2009-10-01,Aktif
+CAB0040,Bank Nusantara KC Jember,Jember,Jawa Timur,Region Jawa Timur,KC,100,2019-08-23,Aktif
+CAB0041,Bank Nusantara KCP Jember 2,Jember,Jawa Timur,Region Jawa Timur,KCP,29,2004-01-03,Aktif
+CAB0042,Bank Nusantara KK Denpasar,Denpasar,Bali,Region Bali Nusra,KK,14,2018-11-16,Aktif
+CAB0043,Bank Nusantara KC Badung,Badung,Bali,Region Bali Nusra,KC,27,2008-05-21,Aktif
+CAB0044,Bank Nusantara KCP Badung 2,Badung,Bali,Region Bali Nusra,KCP,29,2020-09-08,Aktif
+CAB0045,Bank Nusantara KC Badung 3,Badung,Bali,Region Bali Nusra,KC,84,2007-04-09,Aktif
+CAB0046,Bank Nusantara KC Gianyar,Gianyar,Bali,Region Bali Nusra,KC,54,2019-09-16,Aktif
+CAB0047,Bank Nusantara KC Medan,Medan,Sumatera Utara,Region Sumatera,KC,38,2019-09-10,Aktif
+CAB0048,Bank Nusantara KC Binjai,Binjai,Sumatera Utara,Region Sumatera,KC,101,2010-11-25,Aktif
+CAB0049,Bank Nusantara KC Pematang Siantar,Pematang Siantar,Sumatera Utara,Region Sumatera,KC,24,2014-10-18,Aktif
+CAB0050,Bank Nusantara KCP Pematang Siantar 2,Pematang Siantar,Sumatera Utara,Region Sumatera,KCP,10,2005-12-11,Aktif
+CAB0051,Bank Nusantara KCP Pematang Siantar 3,Pematang Siantar,Sumatera Utara,Region Sumatera,KCP,18,2021-08-18,Aktif
+CAB0052,Bank Nusantara KK Palembang,Palembang,Sumatera Selatan,Region Sumatera,KK,27,2004-07-05,Aktif
+CAB0053,Bank Nusantara KCP Palembang 2,Palembang,Sumatera Selatan,Region Sumatera,KCP,26,2014-07-29,Aktif
+CAB0054,Bank Nusantara KCP Palembang 3,Palembang,Sumatera Selatan,Region Sumatera,KCP,21,2010-02-15,Aktif
+CAB0055,Bank Nusantara KC Prabumulih,Prabumulih,Sumatera Selatan,Region Sumatera,KC,16,2007-08-01,Aktif
+CAB0056,Bank Nusantara KCP Balikpapan,Balikpapan,Kalimantan Timur,Region Kalimantan,KCP,12,2013-03-13,Aktif
+CAB0057,Bank Nusantara KC Balikpapan 2,Balikpapan,Kalimantan Timur,Region Kalimantan,KC,17,2015-11-16,Aktif
+CAB0058,Bank Nusantara KC Balikpapan 3,Balikpapan,Kalimantan Timur,Region Kalimantan,KC,16,2020-04-22,Aktif
+CAB0059,Bank Nusantara KC Samarinda,Samarinda,Kalimantan Timur,Region Kalimantan,KC,73,2005-05-03,Aktif
+CAB0060,Bank Nusantara KK Samarinda 2,Samarinda,Kalimantan Timur,Region Kalimantan,KK,20,2004-10-21,Aktif
+CAB0061,Bank Nusantara KK Makassar,Makassar,Sulawesi Selatan,Region Sulawesi,KK,23,2012-12-03,Aktif
+CAB0062,Bank Nusantara KCP Pare-Pare,Pare-Pare,Sulawesi Selatan,Region Sulawesi,KCP,30,2009-02-16,Aktif
+CAB0063,Bank Nusantara KC Tangerang,Tangerang,Banten,Region Jakarta,KC,92,2009-09-01,Aktif
+CAB0064,Bank Nusantara KCP Tangerang Selatan,Tangerang Selatan,Banten,Region Jakarta,KCP,19,2019-05-17,Aktif
+CAB0065,Bank Nusantara KK Tangerang Selatan 2,Tangerang Selatan,Banten,Region Jakarta,KK,25,2014-06-29,Aktif
+CAB0066,Bank Nusantara KCP Serang,Serang,Banten,Region Jakarta,KCP,28,2007-08-11,Aktif
+CAB0067,Bank Nusantara KC Cilegon,Cilegon,Banten,Region Jakarta,KC,32,2012-01-11,Aktif
