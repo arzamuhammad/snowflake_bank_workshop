@@ -31,7 +31,7 @@ Pada session ini, peserta akan menggunakan **Cortex Code di Snowsight** untuk me
 
 ## Pre-requisites
 
-- Sudah menyelesaikan **Session 1-3** (database `BANK_NUSANTARA_DB` dan semua tabel sudah ada)
+- Sudah menyelesaikan **Session 1-3** (database `BANK_DB` dan semua tabel sudah ada)
 - Snowflake Trial Account (**Enterprise Edition** atau lebih tinggi)
 - Cortex Code sudah aktif di Snowsight (biasanya sudah enabled by default)
 
@@ -67,7 +67,7 @@ Buka SQL Worksheet baru dan jalankan:
 ```sql
 USE ROLE ACCOUNTADMIN;
 USE WAREHOUSE BANK_WH;
-USE DATABASE BANK_NUSANTARA_DB;
+USE DATABASE BANK_DB;
 USE SCHEMA RAW_DATA;
 ```
 
@@ -197,7 +197,7 @@ Kita akan membangun **Customer Churn Prediction Model** step by step, setiap lan
 1. Buka **Snowsight** → **Projects** → **Notebooks**
 2. Klik **+ Notebook**
 3. Nama: `Churn_Prediction_CortexCode`
-4. Database: `BANK_NUSANTARA_DB`
+4. Database: `BANK_DB`
 5. Schema: `RAW_DATA`
 6. Warehouse: `BANK_WH`
 
@@ -210,7 +210,7 @@ Buka Cortex Code di notebook cell dan gunakan prompt berikut:
 #### Prompt:
 
 ```
-Buatkan SQL untuk membuat tabel CUSTOMER_CHURN_DATA di schema BANK_NUSANTARA_DB.RAW_DATA 
+Buatkan SQL untuk membuat tabel CUSTOMER_CHURN_DATA di schema BANK_DB.RAW_DATA 
 yang berisi data churn nasabah bank dengan kolom berikut:
 - CUSTOMER_ID (VARCHAR) 
 - TENURE_MONTHS (INT) - berapa lama jadi nasabah
@@ -323,7 +323,7 @@ Gunakan snowflake.ml.registry.Registry
 
 ```
 Buatkan SQL query untuk melakukan batch inference menggunakan model CHURN_PREDICTION_MODEL V1 
-yang sudah di-register di BANK_NUSANTARA_DB.ML_MODELS.
+yang sudah di-register di BANK_DB.ML_MODELS.
 
 1. Scoring semua customer dari tabel CHURN_FEATURES
 2. Tampilkan CUSTOMER_ID, actual CHURNED, predicted churn, dan churn probability
@@ -365,7 +365,7 @@ Buka SQL Worksheet baru, set context:
 ```sql
 USE ROLE ACCOUNTADMIN;
 USE WAREHOUSE BANK_WH;
-USE DATABASE BANK_NUSANTARA_DB;
+USE DATABASE BANK_DB;
 USE SCHEMA ANALYTICS;
 ```
 
@@ -541,7 +541,7 @@ Jelaskan masalahnya dan buatkan versi yang dioptimasi.
 #### Prompt:
 
 ```
-Buatkan dokumentasi lengkap untuk semua tabel di schema BANK_NUSANTARA_DB.RAW_DATA:
+Buatkan dokumentasi lengkap untuk semua tabel di schema BANK_DB.RAW_DATA:
 
 1. Untuk setiap tabel, tampilkan:
    - Nama tabel dan deskripsi singkat
@@ -594,7 +594,7 @@ Peserta bebas bertanya ke Cortex Code untuk menyelesaikan setiap langkah. Beriku
 **Hint prompt:**
 
 ```
-Buatkan tabel TRANSACTION_FRAUD_DATA di BANK_NUSANTARA_DB.RAW_DATA dengan 10,000 rows:
+Buatkan tabel TRANSACTION_FRAUD_DATA di BANK_DB.RAW_DATA dengan 10,000 rows:
 
 Kolom:
 - TRX_ID, NASABAH_ID, TRX_DATE, TRX_AMOUNT, MERCHANT_CATEGORY
@@ -703,7 +703,7 @@ Lalu buat SQL query untuk scoring semua transaksi dan flag yang fraud probabilit
 
 ```sql
 USE ROLE ACCOUNTADMIN;
-USE DATABASE BANK_NUSANTARA_DB;
+USE DATABASE BANK_DB;
 
 -- Tabel dari ML Model exercise
 DROP TABLE IF EXISTS RAW_DATA.CUSTOMER_CHURN_DATA;

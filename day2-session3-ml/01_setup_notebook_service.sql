@@ -32,17 +32,17 @@ CREATE COMPUTE POOL IF NOT EXISTS GPU_POOL_S
 -- -----------------------------------------------------------------------------
 -- Step 2: Create PyPI network rule + external access integration
 -- -----------------------------------------------------------------------------
-USE DATABASE BANK_NUSANTARA_DB;
+USE DATABASE BANK_DB;
 USE SCHEMA PUBLIC;
 
-CREATE OR REPLACE NETWORK RULE BANK_NUSANTARA_DB.PUBLIC.PYPI_NETWORK_RULE
+CREATE OR REPLACE NETWORK RULE BANK_DB.PUBLIC.PYPI_NETWORK_RULE
     TYPE = HOST_PORT
     MODE = EGRESS
     VALUE_LIST = ('pypi.org', 'pypi.python.org', 'pythonhosted.org', 'files.pythonhosted.org')
     COMMENT = 'Allow egress to PyPI for Bank Nusantara ML notebooks';
 
 CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION BANK_PYPI_ACCESS_INTEGRATION
-    ALLOWED_NETWORK_RULES = (BANK_NUSANTARA_DB.PUBLIC.PYPI_NETWORK_RULE)
+    ALLOWED_NETWORK_RULES = (BANK_DB.PUBLIC.PYPI_NETWORK_RULE)
     ENABLED = TRUE
     COMMENT = 'PyPI access for BANK_SERVICE_1 notebook service';
 

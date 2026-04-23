@@ -56,17 +56,17 @@ CREATE OR REPLACE WAREHOUSE BANK_WH
 USE WAREHOUSE BANK_WH;
 
 -- Buat database workshop
-CREATE OR REPLACE DATABASE BANK_NUSANTARA_DB
+CREATE OR REPLACE DATABASE BANK_DB
     COMMENT = 'Database Workshop AI Banking - Bank';
 
 -- Buat schema untuk data
-CREATE OR REPLACE SCHEMA BANK_NUSANTARA_DB.RAW_DATA
+CREATE OR REPLACE SCHEMA BANK_DB.RAW_DATA
     COMMENT = 'Schema untuk raw data (CSV dan PDF)';
 
-CREATE OR REPLACE SCHEMA BANK_NUSANTARA_DB.ANALYTICS
+CREATE OR REPLACE SCHEMA BANK_DB.ANALYTICS
     COMMENT = 'Schema untuk analytics dan AI models';
 
-USE SCHEMA BANK_NUSANTARA_DB.RAW_DATA;
+USE SCHEMA BANK_DB.RAW_DATA;
 ```
 
 ### Step 1.2: Buat Stage untuk Upload File
@@ -89,7 +89,7 @@ CREATE OR REPLACE STAGE STG_CSV_DATA
 ### Step 1.3: Upload File ke Stage
 
 > **Cara Upload via Snowsight:**
-> 1. Navigasi ke **Data** > **Databases** > **BANK_NUSANTARA_DB** > **RAW_DATA** > **Stages**
+> 1. Navigasi ke **Data** > **Databases** > **BANK_DB** > **RAW_DATA** > **Stages**
 > 2. Klik pada stage **STG_DOCUMENTS**
 > 3. Klik tombol **+ Files** di kanan atas
 > 4. Upload semua file PDF dari folder `data/unstructured/`
@@ -99,10 +99,10 @@ Atau menggunakan SnowSQL / Snowflake CLI:
 
 ```bash
 # Upload PDF files
-snow stage copy data/unstructured/*.pdf @BANK_NUSANTARA_DB.RAW_DATA.STG_DOCUMENTS --database BANK_NUSANTARA_DB --schema RAW_DATA
+snow stage copy data/unstructured/*.pdf @BANK_DB.RAW_DATA.STG_DOCUMENTS --database BANK_DB --schema RAW_DATA
 
 # Upload CSV files
-snow stage copy data/structured/*.csv @BANK_NUSANTARA_DB.RAW_DATA.STG_CSV_DATA --database BANK_NUSANTARA_DB --schema RAW_DATA
+snow stage copy data/structured/*.csv @BANK_DB.RAW_DATA.STG_CSV_DATA --database BANK_DB --schema RAW_DATA
 ```
 
 Verifikasi file sudah ter-upload:
@@ -244,7 +244,7 @@ SELECT * FROM FACT_TRANSAKSI LIMIT 5;
 -- ============================================
 -- STEP 2.1: Extract text dari PDF
 -- ============================================
-USE SCHEMA BANK_NUSANTARA_DB.ANALYTICS;
+USE SCHEMA BANK_DB.ANALYTICS;
 
 -- Buat table untuk menyimpan hasil extract PDF
 CREATE OR REPLACE TABLE DOC_SOP_BANK AS
@@ -252,11 +252,11 @@ SELECT
     RELATIVE_PATH AS file_name,
     FILE_URL AS file_url,
     SNOWFLAKE.CORTEX.PARSE_DOCUMENT(
-        @BANK_NUSANTARA_DB.RAW_DATA.STG_DOCUMENTS,
+        @BANK_DB.RAW_DATA.STG_DOCUMENTS,
         RELATIVE_PATH,
         {'mode': 'LAYOUT'}
     ):content::VARCHAR AS extracted_text
-FROM DIRECTORY(@BANK_NUSANTARA_DB.RAW_DATA.STG_DOCUMENTS)
+FROM DIRECTORY(@BANK_DB.RAW_DATA.STG_DOCUMENTS)
 WHERE RELATIVE_PATH LIKE '%.pdf';
 
 -- Verifikasi hasil extract
@@ -337,7 +337,7 @@ SHOW CORTEX SEARCH SERVICES;
 -- Test query 1: Cari informasi tentang pembukaan rekening
 SELECT PARSE_JSON(
     SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-        'BANK_NUSANTARA_DB.ANALYTICS.BANK_SOP_SEARCH',
+        'BANK_DB.ANALYTICS.BANK_SOP_SEARCH',
         '{
             "query": "apa syarat pembukaan rekening baru untuk WNA?",
             "columns": ["chunk_text", "file_name"],
@@ -349,7 +349,7 @@ SELECT PARSE_JSON(
 -- Test query 2: Cari informasi tentang KYC
 SELECT PARSE_JSON(
     SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-        'BANK_NUSANTARA_DB.ANALYTICS.BANK_SOP_SEARCH',
+        'BANK_DB.ANALYTICS.BANK_SOP_SEARCH',
         '{
             "query": "bagaimana prosedur KYC untuk nasabah berisiko tinggi?",
             "columns": ["chunk_text", "file_name"],
@@ -361,7 +361,7 @@ SELECT PARSE_JSON(
 -- Test query 3: Cari informasi AML
 SELECT PARSE_JSON(
     SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-        'BANK_NUSANTARA_DB.ANALYTICS.BANK_SOP_SEARCH',
+        'BANK_DB.ANALYTICS.BANK_SOP_SEARCH',
         '{
             "query": "apa saja red flags transaksi mencurigakan money laundering?",
             "columns": ["chunk_text", "file_name"],
@@ -381,14 +381,14 @@ SELECT PARSE_JSON(
 -- ============================================
 -- STEP 3.1: Buat Semantic View untuk Cortex Analyst
 -- ============================================
-USE SCHEMA BANK_NUSANTARA_DB.ANALYTICS;
+USE SCHEMA BANK_DB.ANALYTICS;
 
 CREATE OR REPLACE SEMANTIC VIEW BANK_ANALYTICS_SV
   COMMENT = 'Semantic View untuk analisis data operasional Bank - mencakup data nasabah, transaksi, kredit, dan simpanan'
 AS
   -- Table: Nasabah (Customer Master)
   TABLES (
-    BANK_NUSANTARA_DB.RAW_DATA.DIM_NASABAH
+    BANK_DB.RAW_DATA.DIM_NASABAH
       AS NASABAH
       COMMENT = 'Data master nasabah bank termasuk informasi demografis dan segmentasi'
       PRIMARY KEY (nasabah_id)
@@ -425,7 +425,7 @@ AS
           SYNONYMS = ('gender', 'kelamin')
       ),
 
-    BANK_NUSANTARA_DB.RAW_DATA.DIM_CABANG
+    BANK_DB.RAW_DATA.DIM_CABANG
       AS CABANG
       COMMENT = 'Data master cabang bank termasuk lokasi dan tipe cabang'
       PRIMARY KEY (cabang_id)
@@ -450,7 +450,7 @@ AS
           SYNONYMS = ('branch type', 'jenis cabang')
       ),
 
-    BANK_NUSANTARA_DB.RAW_DATA.FACT_TRANSAKSI
+    BANK_DB.RAW_DATA.FACT_TRANSAKSI
       AS TRANSAKSI
       COMMENT = 'Data transaksi harian nasabah termasuk transfer, penarikan, setoran, dan pembayaran'
       PRIMARY KEY (transaksi_id)
@@ -478,7 +478,7 @@ AS
           SYNONYMS = ('transaction status', 'status transaksi')
       ),
 
-    BANK_NUSANTARA_DB.RAW_DATA.FACT_KREDIT
+    BANK_DB.RAW_DATA.FACT_KREDIT
       AS KREDIT
       COMMENT = 'Data portofolio kredit/pinjaman termasuk KPR, KKB, KUR, dan kredit modal kerja'
       PRIMARY KEY (kredit_id)
@@ -518,7 +518,7 @@ AS
           SYNONYMS = ('economic sector', 'sektor usaha', 'industry')
       ),
 
-    BANK_NUSANTARA_DB.RAW_DATA.FACT_SIMPANAN
+    BANK_DB.RAW_DATA.FACT_SIMPANAN
       AS SIMPANAN
       COMMENT = 'Data simpanan nasabah termasuk tabungan, deposito, dan giro (Dana Pihak Ketiga / DPK)'
       PRIMARY KEY (simpanan_id)
@@ -638,7 +638,7 @@ AS
 
 ```sql
 -- Verifikasi semantic view sudah terbuat
-SHOW SEMANTIC VIEWS IN SCHEMA BANK_NUSANTARA_DB.ANALYTICS;
+SHOW SEMANTIC VIEWS IN SCHEMA BANK_DB.ANALYTICS;
 
 -- Describe semantic view
 DESCRIBE SEMANTIC VIEW BANK_ANALYTICS_SV;
@@ -656,7 +656,7 @@ SELECT SNOWFLAKE.CORTEX.COMPLETE(
     'claude-3-5-sonnet',
     'Berdasarkan data berikut, jelaskan kondisi NPL ratio bank ini: ' ||
     (SELECT LISTAGG(status_kolektibilitas || ': ' || cnt || ' kredit', ', ')
-     FROM (SELECT status_kolektibilitas, COUNT(*) as cnt FROM BANK_NUSANTARA_DB.RAW_DATA.FACT_KREDIT GROUP BY status_kolektibilitas))
+     FROM (SELECT status_kolektibilitas, COUNT(*) as cnt FROM BANK_DB.RAW_DATA.FACT_KREDIT GROUP BY status_kolektibilitas))
 ) AS analisis_npl;
 
 -- Test 2: Langsung tanya ke Cortex Analyst via Snowflake Intelligence (UI)
@@ -699,12 +699,12 @@ SHOW NOTIFICATION INTEGRATIONS;
 
 #### Tool 1: Cortex Search (SOP Documents)
 - Tool Type: **Cortex Search**
-- Service: `BANK_NUSANTARA_DB.ANALYTICS.BANK_SOP_SEARCH`
+- Service: `BANK_DB.ANALYTICS.BANK_SOP_SEARCH`
 - Description: `Gunakan tool ini untuk menjawab pertanyaan tentang SOP, kebijakan, prosedur, dan regulasi perbankan Bank. Termasuk SOP pembukaan rekening, panduan KYC, kebijakan kredit UMKM, panduan AML (Anti Money Laundering), prosedur restrukturisasi kredit, dan panduan perbankan digital.`
 
 #### Tool 2: Cortex Analyst (Structured Data)
 - Tool Type: **Cortex Analyst**
-- Semantic View: `BANK_NUSANTARA_DB.ANALYTICS.BANK_ANALYTICS_SV`
+- Semantic View: `BANK_DB.ANALYTICS.BANK_ANALYTICS_SV`
 - Description: `Gunakan tool ini untuk menjawab pertanyaan tentang data operasional perbankan yang memerlukan query ke database. Termasuk data nasabah, transaksi, kredit/pinjaman, simpanan (DPK), dan metrik perbankan seperti NPL ratio, LDR, volume transaksi, jumlah nasabah, dan lain-lain. Tool ini bisa menghasilkan chart dan tabel.`
 
 #### Tool 3: Web Search
