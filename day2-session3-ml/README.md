@@ -1,6 +1,6 @@
 # Day 2 - Session 3: End-to-End Machine Learning
 
-## Workshop: Snowflake x Bank Mandiri
+## Workshop: Snowflake x Bank
 ### "Credit Scoring Model untuk Kredit UMKM"
 
 ---
@@ -524,12 +524,12 @@ DROP TABLE IF EXISTS BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_PREDICTIONS;
 
 ---
 
-## Koneksi ke Bank Mandiri
+## Koneksi ke Bank
 
 | Aspek | Relevansi |
 |-------|-----------|
 | **Livin' Merchant** | Data transaksi UMKM real-time → perfect untuk cash-flow based lending |
-| **AI Fraud Detection** | Bank Mandiri sudah pakai AI (85% reduction) - credit scoring adalah next step |
+| **AI Fraud Detection** | Bank sudah pakai AI (85% reduction) - credit scoring adalah next step |
 | **Regulasi OJK** | SHAP explainability → transparansi model wajib untuk persetujuan kredit |
 | **ML Lineage** | Audit trail data → akuntabilitas sesuai regulasi |
 

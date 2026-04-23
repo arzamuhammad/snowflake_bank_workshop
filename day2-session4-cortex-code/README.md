@@ -1,6 +1,6 @@
 # Day 2 - Session 4: Accelerating with Cortex Code
 
-## Workshop: Snowflake x Bank Nusantara
+## Workshop: Snowflake x Bank
 ### "From Zero to ML Model & Data Pipeline dengan Natural Language"
 
 ---
@@ -479,7 +479,7 @@ Format hasilnya sebagai dashboard monitoring yang mudah dibaca.
 ```
 Buatkan Streamlit app sederhana di Snowflake untuk monitoring data pipeline:
 
-1. Header: "Bank Nusantara - Pipeline Monitor"
+1. Header: "Bank - Pipeline Monitor"
 2. Metrics row: Tampilkan 4 KPI cards:
    - Total Nasabah Aktif
    - Total DPK (formatted Rp)
@@ -751,7 +751,7 @@ DROP MODEL IF EXISTS ML_MODELS.FRAUD_DETECTION_MODEL;
 
 ---
 
-**Selamat! Anda telah menyelesaikan seluruh 4 session workshop Snowflake x Bank Nusantara!**
+**Selamat! Anda telah menyelesaikan seluruh 4 session workshop Snowflake x Bank!**
 
 ---
 

@@ -1,6 +1,6 @@
 # Day 1 - Session 1: RAG Applications + Snowflake Intelligence
 
-## Workshop: Snowflake x Bank Nusantara
+## Workshop: Snowflake x Bank
 ### "Membangun AI Banking Assistant dengan Snowflake Cortex AI"
 
 ---
@@ -51,13 +51,13 @@ CREATE OR REPLACE WAREHOUSE BANK_WH
     WAREHOUSE_SIZE = 'MEDIUM'
     AUTO_SUSPEND = 120
     AUTO_RESUME = TRUE
-    COMMENT = 'Warehouse untuk Workshop Bank Nusantara';
+    COMMENT = 'Warehouse untuk Workshop Bank';
 
 USE WAREHOUSE BANK_WH;
 
 -- Buat database workshop
 CREATE OR REPLACE DATABASE BANK_NUSANTARA_DB
-    COMMENT = 'Database Workshop AI Banking - Bank Nusantara';
+    COMMENT = 'Database Workshop AI Banking - Bank';
 
 -- Buat schema untuk data
 CREATE OR REPLACE SCHEMA BANK_NUSANTARA_DB.RAW_DATA
@@ -313,7 +313,7 @@ CREATE OR REPLACE CORTEX SEARCH SERVICE BANK_SOP_SEARCH
     ATTRIBUTES file_name
     WAREHOUSE = BANK_WH
     TARGET_LAG = '1 hour'
-    COMMENT = 'Search service untuk dokumen SOP Bank Nusantara'
+    COMMENT = 'Search service untuk dokumen SOP Bank'
 AS (
     SELECT
         chunk_text,
@@ -384,7 +384,7 @@ SELECT PARSE_JSON(
 USE SCHEMA BANK_NUSANTARA_DB.ANALYTICS;
 
 CREATE OR REPLACE SEMANTIC VIEW BANK_ANALYTICS_SV
-  COMMENT = 'Semantic View untuk analisis data operasional Bank Nusantara - mencakup data nasabah, transaksi, kredit, dan simpanan'
+  COMMENT = 'Semantic View untuk analisis data operasional Bank - mencakup data nasabah, transaksi, kredit, dan simpanan'
 AS
   -- Table: Nasabah (Customer Master)
   TABLES (
@@ -694,13 +694,13 @@ SHOW NOTIFICATION INTEGRATIONS;
 > **Melalui Snowflake Intelligence UI:**
 >
 > 1. Navigasi ke **AI & ML** > **Snowflake Intelligence** > **+ New Agent**
-> 2. Nama Agent: **Bank Nusantara AI Assistant**
+> 2. Nama Agent: **Bank AI Assistant**
 > 3. Tambahkan tools berikut:
 
 #### Tool 1: Cortex Search (SOP Documents)
 - Tool Type: **Cortex Search**
 - Service: `BANK_NUSANTARA_DB.ANALYTICS.BANK_SOP_SEARCH`
-- Description: `Gunakan tool ini untuk menjawab pertanyaan tentang SOP, kebijakan, prosedur, dan regulasi perbankan Bank Nusantara. Termasuk SOP pembukaan rekening, panduan KYC, kebijakan kredit UMKM, panduan AML (Anti Money Laundering), prosedur restrukturisasi kredit, dan panduan perbankan digital.`
+- Description: `Gunakan tool ini untuk menjawab pertanyaan tentang SOP, kebijakan, prosedur, dan regulasi perbankan Bank. Termasuk SOP pembukaan rekening, panduan KYC, kebijakan kredit UMKM, panduan AML (Anti Money Laundering), prosedur restrukturisasi kredit, dan panduan perbankan digital.`
 
 #### Tool 2: Cortex Analyst (Structured Data)
 - Tool Type: **Cortex Analyst**
@@ -718,7 +718,7 @@ SHOW NOTIFICATION INTEGRATIONS;
 #### Agent Instructions (System Prompt):
 
 ```
-Kamu adalah AI Assistant Bank Nusantara, asisten AI untuk tim manajemen dan analis Bank Nusantara.
+Kamu adalah AI Assistant Bank, asisten AI untuk tim manajemen dan analis Bank.
 
 KEMAMPUAN:
 1. Menjawab pertanyaan tentang SOP dan kebijakan internal bank berdasarkan dokumen resmi
@@ -736,7 +736,7 @@ GAYA JAWABAN:
   * RECOMMENDATION: rekomendasi tindakan yang perlu diambil
 
 KONTEKS BANK:
-- Bank Nusantara adalah bank umum dengan fokus pada segmen retail dan UMKM
+- Bank adalah bank umum dengan fokus pada segmen retail dan UMKM
 - Metrik penting: NPL Ratio (target < 5%), LDR (target 78-92%), DPK growth
 - Regulasi: OJK, BI, UU PDP (Perlindungan Data Pribadi)
 - Status kolektibilitas kredit: 1-Lancar, 2-DPK, 3-Kurang Lancar, 4-Diragukan, 5-Macet
@@ -756,7 +756,7 @@ Berikut contoh pertanyaan untuk menguji agent:
 
 **Test Structured Data (Analytics) - Fact Based:**
 ```
-1. "Berapa total DPK Bank Nusantara saat ini?"
+1. "Berapa total DPK Bank saat ini?"
 2. "Tampilkan jumlah nasabah per segmen"
 3. "Berapa NPL ratio saat ini?"
 4. "Tampilkan top 10 cabang dengan volume transaksi tertinggi"

@@ -1,6 +1,6 @@
 # Day 1 - Session 2: Data Protection Policies
 
-## Workshop: Snowflake x Bank Nusantara
+## Workshop: Snowflake x Bank
 ### "Proteksi Data Nasabah Sesuai Regulasi OJK & UU PDP"
 
 ---
