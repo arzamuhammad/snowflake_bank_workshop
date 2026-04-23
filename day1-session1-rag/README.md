@@ -724,8 +724,122 @@ SHOW NOTIFICATION INTEGRATIONS;
 - Description: `Gunakan tool ini untuk mencari informasi terkini dari internet tentang regulasi perbankan Indonesia, berita ekonomi, suku bunga BI, kurs mata uang, dan informasi lain yang tidak tersedia di database internal bank.`
 
 #### Tool 4: Send Email (Opsional)
-- Tool Type: **Send Email**
-- Description: `Gunakan tool ini untuk mengirim email notifikasi atau laporan ke pihak terkait. Misalnya mengirim ringkasan laporan NPL ke manajemen atau mengirim alert kredit bermasalah.`
+
+> **PENTING:** Di Snowflake Intelligence Agent, email **tidak dikirim lewat tool type bawaan**. Kita harus membuat **Stored Procedure** dulu yang memanggil `SYSTEM$SEND_EMAIL`, lalu register procedure itu sebagai **Custom Tool (Procedure)** di Agent.
+
+**Prasyarat:**
+1. Sudah ada **Notification Integration** tipe EMAIL (contoh: `snowflake_intelligence_email_int`) — kalau belum, jalankan:
+   ```sql
+   CREATE OR REPLACE NOTIFICATION INTEGRATION snowflake_intelligence_email_int
+     TYPE = EMAIL
+     ENABLED = TRUE
+     ALLOWED_RECIPIENTS = ('your-email@example.com');
+   ```
+2. (Opsional) Table `EMAIL_PREVIEWS` untuk menyimpan history email:
+   ```sql
+   CREATE OR REPLACE TABLE BANK_DB.ANALYTICS.EMAIL_PREVIEWS (
+     EMAIL_ID VARCHAR, RECIPIENT_EMAIL VARCHAR, SUBJECT VARCHAR,
+     HTML_CONTENT VARCHAR, CREATED_AT TIMESTAMP_NTZ
+   );
+   ```
+
+**Step 1: Create Stored Procedure `SEND_EMAIL_NOTIFICATION`**
+
+```sql
+CREATE OR REPLACE PROCEDURE BANK_DB.ANALYTICS.SEND_EMAIL_NOTIFICATION(
+    "EMAIL_SUBJECT" VARCHAR,
+    "EMAIL_CONTENT" VARCHAR,
+    "RECIPIENT_EMAIL" VARCHAR DEFAULT 'analyst@bank.demo',
+    "MIME_TYPE" VARCHAR DEFAULT 'text/html'
+)
+RETURNS VARCHAR
+LANGUAGE PYTHON
+RUNTIME_VERSION = '3.10'
+PACKAGES = ('snowflake-snowpark-python','markdown')
+HANDLER = 'send_email'
+COMMENT = 'Sends email via SYSTEM$SEND_EMAIL with Snowflake brand styling.'
+EXECUTE AS OWNER
+AS '
+import snowflake.snowpark as snowpark
+import markdown
+
+def send_email(session: snowpark.Session, email_subject: str, email_content: str,
+               recipient_email: str = ''analyst@bank.demo'',
+               mime_type: str = ''text/html'') -> str:
+
+    if not email_subject or not email_subject.strip():
+        return ''ERROR: Email subject cannot be empty''
+    if not email_content or not email_content.strip():
+        return ''ERROR: Email content cannot be empty''
+    if not recipient_email or not recipient_email.strip():
+        recipient_email = ''analyst@bank.demo''
+
+    import time, hashlib
+    from datetime import datetime
+    timestamp = str(int(time.time() * 1000))
+    email_id = hashlib.md5(f"{recipient_email}{timestamp}".encode()).hexdigest()[:12]
+
+    if mime_type == ''text/html'':
+        html_body = markdown.markdown(email_content, extensions=[''nl2br'', ''tables'', ''fenced_code''])
+        html_body = html_body.replace(''<strong>'', ''<strong style="color: #29B5E8; font-weight: 700;">'')
+        html_body = html_body.replace(''<h2>'', ''<h2 style="color: #29B5E8; font-weight: 700; border-bottom: 2px solid #29B5E8; padding-bottom: 5px;">'')
+        current_time = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+        html_content = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"><title>{email_subject}</title>
+<style>body {{ font-family: Lato, Arial, sans-serif; background-color: #f5f7fa; padding: 20px; }}
+.email-viewer {{ max-width: 900px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }}
+.email-header {{ background: linear-gradient(135deg, #29B5E8 0%, #146892 100%); color: white; padding: 25px 30px; }}
+.email-subject {{ font-size: 24px; font-weight: 700; margin-bottom: 15px; }}
+.email-body {{ padding: 30px; line-height: 1.6; color: #000; }}</style></head><body>
+<div class="email-viewer"><div class="email-header"><div class="email-subject">{email_subject}</div>
+<div><strong>From:</strong> Bank AI Assistant &nbsp; <strong>To:</strong> {recipient_email} &nbsp; <strong>Date:</strong> {current_time}</div>
+</div><div class="email-body">{html_body}</div></div></body></html>"""
+    else:
+        html_content = email_content
+
+    try:
+        insert_query = """INSERT INTO BANK_DB.ANALYTICS.EMAIL_PREVIEWS
+            (EMAIL_ID, RECIPIENT_EMAIL, SUBJECT, HTML_CONTENT, CREATED_AT)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP())"""
+        session.sql(insert_query, params=[email_id, recipient_email, email_subject, html_content]).collect()
+
+        escaped_subject = email_subject.replace("''", "''''")
+        escaped_content = html_content.replace("''", "''''")
+        query = f"""CALL SYSTEM$SEND_EMAIL(
+            ''snowflake_intelligence_email_int'',
+            ''{recipient_email}'',
+            ''{escaped_subject}'',
+            ''{escaped_content}'',
+            ''{mime_type}''
+        )"""
+        session.sql(query).collect()
+
+        return f"EMAIL SENT. Subject: {email_subject} | To: {recipient_email} | ID: {email_id}"
+    except Exception as e:
+        return f''ERROR sending email: {str(e)}''
+';
+```
+
+**Step 2: Test procedure**
+```sql
+CALL BANK_DB.ANALYTICS.SEND_EMAIL_NOTIFICATION(
+  'Test NPL Alert',
+  '## Laporan NPL\n\nRasio NPL saat ini **4.2%** — masih dalam batas aman.',
+  'your-email@example.com',
+  'text/html'
+);
+```
+
+**Step 3: Register sebagai Custom Tool di Agent UI**
+- Klik **Add Tool** → pilih **Custom Tool (Procedure)**
+- **Procedure:** `BANK_DB.ANALYTICS.SEND_EMAIL_NOTIFICATION`
+- **Tool name:** `send_email_notification`
+- **Description:** `Gunakan tool ini untuk mengirim email notifikasi atau laporan ke pihak terkait. Misalnya mengirim ringkasan laporan NPL ke manajemen atau alert kredit bermasalah. Parameter: email_subject (judul email), email_content (isi email dalam Markdown), recipient_email (alamat penerima), mime_type (default 'text/html').`
+- **Parameter descriptions:**
+  - `EMAIL_SUBJECT`: Judul email
+  - `EMAIL_CONTENT`: Isi email (bisa Markdown, akan auto-convert ke HTML)
+  - `RECIPIENT_EMAIL`: Alamat email penerima (harus ada di `ALLOWED_RECIPIENTS`)
+  - `MIME_TYPE`: `text/html` (default) atau `text/plain`
+
 
 #### Agent Instructions (System Prompt):
 
