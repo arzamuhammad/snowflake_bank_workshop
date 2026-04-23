@@ -1,6 +1,6 @@
 # Day 2 - Session 3: End-to-End Machine Learning
 
-## Workshop: Snowflake x Bank Nusantara
+## Workshop: Snowflake x Bank Mandiri
 ### "Credit Scoring Model untuk Kredit UMKM"
 
 ---
@@ -104,6 +104,12 @@ Pada session ini, peserta akan membangun **Credit Scoring Model** secara end-to-
    - `matplotlib`
    - `scipy`
 
+> **Catatan Session:** Di dalam Snowsight Notebook, session di-inject otomatis via `get_active_session()` — tidak perlu `Session.builder`. Notebook ini sudah menggunakan pola tersebut:
+> ```python
+> from snowflake.snowpark.context import get_active_session
+> session = get_active_session()
+> ```
+
 ### Opsi B: Local (IDE / CLI)
 
 ```bash
@@ -118,7 +124,7 @@ pip install snowflake-ml-python snowflake-snowpark-python xgboost scikit-learn p
 jupyter notebook credit_scoring_ml.ipynb
 ```
 
-> **Catatan:** Pastikan koneksi Snowflake sudah dikonfigurasi di `~/.snowflake/connections.toml`
+> **Catatan:** Untuk run lokal, uncomment dua baris `connection_name` + `Session.builder` di cell setup notebook, dan pastikan koneksi Snowflake sudah dikonfigurasi di `~/.snowflake/connections.toml`.
 
 ---
 
@@ -159,21 +165,30 @@ Status kolektibilitas (1-5) di-convert ke binary classification:
 
 ### Features yang Dibuat
 
-| # | Feature | Sumber | Deskripsi |
-|---|---------|--------|-----------|
-| 1 | `AVG_TRX_AMOUNT` | FACT_TRANSAKSI | Rata-rata jumlah transaksi |
-| 2 | `TOTAL_TRX_COUNT` | FACT_TRANSAKSI | Total jumlah transaksi |
-| 3 | `DIGITAL_CHANNEL_RATIO` | FACT_TRANSAKSI | Rasio transaksi via channel digital (Mobile Banking, Internet Banking, QRIS) |
-| 4 | `FAILED_TRX_RATIO` | FACT_TRANSAKSI | Rasio transaksi gagal |
-| 5 | `TOTAL_TRX_VOLUME` | FACT_TRANSAKSI | Total volume transaksi (Rp) |
-| 6 | `TOTAL_SIMPANAN` | FACT_SIMPANAN | Total saldo simpanan aktif |
-| 7 | `JUMLAH_PRODUK_SIMPANAN` | FACT_SIMPANAN | Jumlah produk simpanan |
-| 8 | `MAX_SALDO_SIMPANAN` | FACT_SIMPANAN | Saldo simpanan terbesar |
-| 9 | `PENGHASILAN_BULANAN` | DIM_NASABAH | Penghasilan bulanan nasabah |
-| 10 | `LAMA_JADI_NASABAH_TAHUN` | DIM_NASABAH | Lama menjadi nasabah (tahun) |
-| 11 | `USIA` | DIM_NASABAH | Usia nasabah |
-| 12 | `CREDIT_UTILIZATION_RATIO` | FACT_KREDIT | Outstanding / Jumlah Pinjaman |
-| 13 | `SAVING_RATIO` | FACT_SIMPANAN + KREDIT | Total Simpanan / Jumlah Pinjaman |
+| # | Feature | Sumber | Deskripsi | Tipe |
+|---|---------|--------|-----------|------|
+| 1 | `AVG_TRX_AMOUNT` | FACT_TRANSAKSI | Rata-rata jumlah transaksi | Numeric |
+| 2 | `TOTAL_TRX_COUNT` | FACT_TRANSAKSI | Total jumlah transaksi | Numeric |
+| 3 | `DIGITAL_CHANNEL_RATIO` | FACT_TRANSAKSI | Rasio transaksi via channel digital (Mobile Banking, Internet Banking, QRIS) | Numeric |
+| 4 | `FAILED_TRX_RATIO` | FACT_TRANSAKSI | Rasio transaksi gagal | Numeric |
+| 5 | `TOTAL_TRX_VOLUME` | FACT_TRANSAKSI | Total volume transaksi (Rp) | Numeric |
+| 6 | `TOTAL_SIMPANAN` | FACT_SIMPANAN | Total saldo simpanan aktif | Numeric |
+| 7 | `JUMLAH_PRODUK_SIMPANAN` | FACT_SIMPANAN | Jumlah produk simpanan | Numeric |
+| 8 | `MAX_SALDO_SIMPANAN` | FACT_SIMPANAN | Saldo simpanan terbesar | Numeric |
+| 9 | `AVG_BUNGA_SIMPANAN` | FACT_SIMPANAN | Rata-rata suku bunga simpanan | Numeric |
+| 10 | `PENGHASILAN_BULANAN` | DIM_NASABAH | Penghasilan bulanan nasabah | Numeric |
+| 11 | `LAMA_JADI_NASABAH_TAHUN` | DIM_NASABAH | Lama menjadi nasabah (tahun) | Numeric |
+| 12 | `USIA` | DIM_NASABAH | Usia nasabah | Numeric |
+| 13 | `CREDIT_UTILIZATION_RATIO` | FACT_KREDIT | Outstanding / Jumlah Pinjaman | Numeric |
+| 14 | `SAVING_RATIO` | FACT_SIMPANAN + KREDIT | Total Simpanan / Jumlah Pinjaman | Numeric |
+| 15 | `JENIS_KREDIT` | FACT_KREDIT | Jenis produk kredit | Categorical (encoded) |
+| 16 | `SEKTOR_EKONOMI` | FACT_KREDIT | Sektor ekonomi nasabah | Categorical (encoded) |
+| 17 | `AGUNAN` | FACT_KREDIT | Jenis agunan kredit | Categorical (encoded) |
+| 18 | `SEGMEN_NASABAH` | DIM_NASABAH | Segmen nasabah (e.g. UMKM, Retail) | Categorical (encoded) |
+| 19 | `PEKERJAAN` | DIM_NASABAH | Pekerjaan nasabah | Categorical (encoded) |
+| 20 | `JENIS_KELAMIN` | DIM_NASABAH | Jenis kelamin nasabah | Categorical (encoded) |
+
+> **Catatan:** Fitur kategorikal di-encode dengan `sklearn.preprocessing.LabelEncoder` sebelum training. Saat V2 dilog ulang ke Model Registry, encoding yang sama direplikasi di Snowpark (`_encode_snowpark` helper) untuk memastikan sample input Snowpark cocok dengan schema training — ini yang memungkinkan ML Lineage tercatat.
 
 ### Snowflake Feature Store
 
@@ -260,24 +275,62 @@ grid_search = GridSearchCV(
 
 ## Part 4: Model Registry & Deployment
 
-### Register ke Snowflake Model Registry
+### Register Model V1 (Baseline) - pandas sample
 
 ```python
 from snowflake.ml.registry import Registry
 
 reg = Registry(session=session, database_name="BANK_NUSANTARA_DB", schema_name="ML_MODELS")
 
-mv = reg.log_model(
+mv_v1 = reg.log_model(
+    model_v1,
+    model_name="CREDIT_SCORING_UMKM",
+    version_name="V1",
+    sample_input_data=X_train.head(10),              # pandas DataFrame
+    conda_dependencies=["xgboost", "scikit-learn"],
+    target_platforms=["WAREHOUSE"],
+    metrics={"auc_roc": auc_v1, "average_precision": ap_v1},
+    comment="Baseline XGBoost Credit Scoring Model - no tuning"
+)
+```
+
+### Register Model V2 (Tuned) - Snowpark sample untuk Lineage
+
+Agar Snowflake bisa mencatat **ML Lineage** (source tables → model), V2 di-log ulang dengan **Snowpark DataFrame** sebagai `sample_input_data`. Karena kolom kategorikal sudah di-`LabelEncoder` di pandas, encoding yang sama direplikasi di Snowpark via helper:
+
+```python
+def _encode_snowpark(col_name, le):
+    classes = list(le.classes_)
+    expr = F.when(F.col(col_name) == F.lit(classes[0]), F.lit(0))
+    for i, cls in enumerate(classes[1:], start=1):
+        expr = expr.when(F.col(col_name) == F.lit(cls), F.lit(i))
+    return expr.otherwise(F.lit(-1)).cast(T.IntegerType()).alias(col_name)
+
+sample_sp_df = master_features.select(*select_exprs).na.fill(0).limit(10)
+
+# Drop existing V2 dulu lalu re-log
+try:
+    reg.get_model("CREDIT_SCORING_UMKM").delete_version("V2")
+except Exception:
+    pass
+
+mv_v2 = reg.log_model(
     model_v2,
     model_name="CREDIT_SCORING_UMKM",
     version_name="V2",
-    sample_input_data=X_train.head(10),
+    sample_input_data=sample_sp_df,                  # Snowpark DataFrame (untuk lineage)
     conda_dependencies=["xgboost", "scikit-learn"],
     target_platforms=["WAREHOUSE"],
-    metrics={"auc_roc": auc_v2, "average_precision": ap_v2},
-    comment="Tuned XGBoost Credit Scoring Model"
+    metrics={
+        "auc_roc": auc_v2,
+        "average_precision": ap_v2,
+        "best_params": str(grid_search.best_params_),
+    },
+    comment="Tuned XGBoost Credit Scoring Model - re-logged with Snowpark sample_input for lineage"
 )
 ```
+
+> **Kenapa Snowpark sample_input?** Saat `sample_input_data` berupa Snowpark DataFrame, Snowflake mencatat tabel sumber → feature columns → model version, sehingga `mv.lineage(direction="upstream")` mengembalikan referensi object yang benar.
 
 ### Verifikasi
 
@@ -296,7 +349,9 @@ SHOW FUNCTIONS IN MODEL BANK_NUSANTARA_DB.ML_MODELS.CREDIT_SCORING_UMKM VERSION 
 | `ML_FEATURES` | `NASABAH_TRANSACTION_FEATURES` | Feature View | Transaction features |
 | `ML_FEATURES` | `NASABAH_SIMPANAN_FEATURES` | Feature View | Simpanan features |
 | `ML_MODELS` | `CREDIT_SCORING_UMKM` | Model (V1, V2) | XGBoost credit scoring |
-| `RAW_DATA` | `CREDIT_SCORING_FEATURES` | Table | Master feature table |
+| `ML_MODELS` | `CREDIT_SCORING_MONITOR` | Model Monitor | Monitor drift + performance V2 |
+| `RAW_DATA` | `CREDIT_SCORING_FEATURES` | Table | Master feature table (encoded) |
+| `RAW_DATA` | `CREDIT_SCORING_PREDICTIONS` | Table | Inference log (source utk Model Monitor) |
 
 ---
 
@@ -340,21 +395,69 @@ FROM BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_FEATURES t,
 
 ## Part 6: ML Observability & Monitoring
 
-### Setup Model Monitor
+### 6.1 Buat Inference Log Table
+
+Model Monitor butuh source table yang berisi **features + prediction score + actual label + timestamp**. Notebook membuatnya via SQL:
+
+```sql
+CREATE OR REPLACE TABLE BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_PREDICTIONS AS
+SELECT
+    KREDIT_ID,
+    NASABAH_ID,
+    IS_DEFAULT AS ACTUAL_DEFAULT,
+    <feature_cols>,
+    MODEL(BANK_NUSANTARA_DB.ML_MODELS.CREDIT_SCORING_UMKM, V2)!PREDICT_PROBA(
+        <feature_cols>
+    ):output_feature_1::FLOAT AS DEFAULT_PROBABILITY,
+    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ AS PREDICTION_TS
+FROM BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_FEATURES;
+```
+
+### 6.2 Setup Model Monitor (SQL)
+
+Notebook menggunakan **SQL `CREATE MODEL MONITOR`** (bukan Python API) — ini approach yang direkomendasikan Snowflake saat ini:
+
+```sql
+CREATE OR REPLACE MODEL MONITOR BANK_NUSANTARA_DB.ML_MODELS.CREDIT_SCORING_MONITOR
+WITH
+    MODEL = BANK_NUSANTARA_DB.ML_MODELS.CREDIT_SCORING_UMKM
+    VERSION = V2
+    FUNCTION = 'predict_proba'
+    WAREHOUSE = BANK_WH
+    SOURCE = BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_PREDICTIONS
+    TIMESTAMP_COLUMN = PREDICTION_TS
+    PREDICTION_SCORE_COLUMNS = (DEFAULT_PROBABILITY)
+    ACTUAL_CLASS_COLUMNS = (ACTUAL_DEFAULT)
+    ID_COLUMNS = (KREDIT_ID)
+    REFRESH_INTERVAL = '1 day'
+    AGGREGATION_WINDOW = '1 day';
+
+SHOW MODEL MONITORS IN SCHEMA BANK_NUSANTARA_DB.ML_MODELS;
+```
+
+### 6.3 ML Lineage - Audit Trail
 
 ```python
-from snowflake.ml.monitoring import ModelMonitor, ModelMonitorConfig
-
-monitor = ModelMonitor(
-    session=session,
-    name="CREDIT_SCORING_MONITOR",
-    config=ModelMonitorConfig(
-        model_version=mv_v2,
-        model_function_name="predict_proba",
-        background_compute_warehouse_name="BANK_WH"
-    )
-)
+upstream   = mv_v2.lineage(direction="upstream")     # tabel / feature views sumber
+downstream = mv_v2.lineage(direction="downstream")   # objects turunan dari model
 ```
+
+> Lineage hanya populated bila model di-log dengan **Snowpark DataFrame** sebagai `sample_input_data` (lihat Part 4.2).
+
+### 6.4 Simulasi Drift Detection (Scipy KS-Test)
+
+Untuk demo, notebook menyuntikkan shift kecil pada prediksi baseline dan menguji dengan Kolmogorov-Smirnov:
+
+```python
+from scipy import stats
+shifted_probs = np.clip(y_prob_v2 + np.random.normal(0.05, 0.02, len(y_prob_v2)), 0, 1)
+ks_stat, ks_pvalue = stats.ks_2samp(y_prob_v2, shifted_probs)
+# p-value < 0.05 → significant drift → retrain
+```
+
+Plot yang dihasilkan (`drift_detection.png`):
+- Histogram distribusi probabilitas Week 1 (baseline) vs Week 4 (drifted)
+- Time series AUC-ROC mingguan dengan threshold alert (0.75)
 
 ### Jenis Monitoring
 
@@ -379,15 +482,17 @@ Jalankan setelah workshop selesai:
 ```sql
 USE ROLE ACCOUNTADMIN;
 
--- Hapus model
+-- Hapus model monitor dan model
+DROP MODEL MONITOR IF EXISTS BANK_NUSANTARA_DB.ML_MODELS.CREDIT_SCORING_MONITOR;
 DROP MODEL IF EXISTS BANK_NUSANTARA_DB.ML_MODELS.CREDIT_SCORING_UMKM;
 
 -- Hapus schemas
 DROP SCHEMA IF EXISTS BANK_NUSANTARA_DB.ML_FEATURES CASCADE;
 DROP SCHEMA IF EXISTS BANK_NUSANTARA_DB.ML_MODELS CASCADE;
 
--- Hapus feature table
+-- Hapus feature & prediction tables
 DROP TABLE IF EXISTS BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_FEATURES;
+DROP TABLE IF EXISTS BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_PREDICTIONS;
 ```
 
 ---
@@ -399,11 +504,14 @@ DROP TABLE IF EXISTS BANK_NUSANTARA_DB.RAW_DATA.CREDIT_SCORING_FEATURES;
 | `ModuleNotFoundError: snowflake.ml` | Install: `pip install snowflake-ml-python` |
 | `xgboost not found` | Install: `pip install xgboost` (atau tambahkan di Snowsight Packages) |
 | Model registration gagal | Pastikan schema `ML_MODELS` sudah exist, cek privileges |
-| `MODEL()!PREDICT()` error | Cek jumlah dan urutan kolom harus sama persis dengan saat training |
+| `MODEL()!PREDICT()` error | Cek jumlah dan urutan kolom harus sama persis dengan saat training (lihat `feature_cols`) |
 | Feature Store error | Pastikan schema `ML_FEATURES` bisa dibuat, cek warehouse aktif |
 | SHAP `EXPLAIN()` tidak tersedia | Model harus di-register dengan `sample_input_data` dan `target_platforms=["WAREHOUSE"]` |
+| `mv_v2.lineage()` return kosong | Model V2 harus di-log ulang dengan **Snowpark DataFrame** sebagai `sample_input_data` (lihat Part 4.2, helper `_encode_snowpark`) |
+| `CREATE MODEL MONITOR` gagal | Source table (`CREDIT_SCORING_PREDICTIONS`) harus ada dengan kolom: `PREDICTION_TS` (TIMESTAMP_NTZ), `DEFAULT_PROBABILITY`, `ACTUAL_DEFAULT`, `KREDIT_ID` |
 | GridSearchCV sangat lambat | Kurangi `param_grid` atau gunakan `RandomizedSearchCV` |
 | Imbalanced dataset | Gunakan `scale_pos_weight` di XGBoost (sudah dihandle di notebook) |
+| `get_active_session()` error di lokal | Jalankan di Snowsight Notebook, atau uncomment baris `Session.builder` di cell setup untuk local run |
 
 ---
 
