@@ -1,0 +1,350 @@
+================================================================================
+  IDE & REKOMENDASI WORKSHOP: SNOWFLAKE x BANK MANDIRI
+  Prepared by: CoCo (Cortex Code)
+  Date: April 2026
+================================================================================
+
+Halo Mas Ardiyan,
+
+Berikut ide-ide saya untuk membuat workshop ini impactful dan relevan bagi tim
+data Bank Mandiri. Saya sudah riset konteks Bank Mandiri (Cloudera data lake,
+600+ Tableau dashboards, Livin' app, Kopra platform, AI fraud detection) agar
+ide-ide ini benar-benar nyambung dengan kebutuhan mereka.
+
+================================================================================
+PRINSIP UTAMA WORKSHOP
+================================================================================
+
+1. GUNAKAN SKENARIO BANKING YANG REALISTIS
+   - Jangan pakai dataset generic (iris, titanic, dll)
+   - Gunakan data sintetis yang MIRIP dengan dunia perbankan Indonesia
+   - Contoh: data nasabah, transaksi, kredit, cabang, produk perbankan
+   - Terminologi dalam Bahasa Indonesia: KTP/NIK, rekening, cabang, dsb
+
+2. "AHA MOMENT" DI SETIAP SESSION
+   - Setiap session harus punya momen WOW yang bikin peserta excited
+   - Bukan hanya teori, tapi langsung hands-on dan lihat hasilnya
+
+3. KONEKSIKAN DENGAN PAIN POINT BANK MANDIRI
+   - Mereka sudah pakai Cloudera + Tableau -> tunjukkan value add Snowflake
+   - Fraud detection sudah ada -> tunjukkan ML on Snowflake yang lebih mudah
+   - 50+ legacy systems -> tunjukkan simplicity Snowflake
+
+================================================================================
+DAY 1 - SESSION 1: RAG Applications + Snowflake Intelligence
+================================================================================
+
+TEMA: "AI Assistant untuk Internal Bank Mandiri"
+
+>> IDE SKENARIO:
+   Bangun AI Assistant yang bisa menjawab pertanyaan dari 2 sumber:
+   
+   A) UNSTRUCTURED DATA (Cortex Search):
+      - Upload dokumen SOP internal bank (simulasi), misalnya:
+        * SOP Pembukaan Rekening Baru
+        * Panduan KYC (Know Your Customer)
+        * Kebijakan Kredit Mikro & UMKM
+        * Panduan Anti Money Laundering (AML)
+        * Peraturan OJK terkait perbankan (ringkasan)
+      - Peserta bisa tanya: "Apa syarat pembukaan rekening korporasi?"
+        dan AI menjawab berdasarkan dokumen SOP
+   
+   B) STRUCTURED DATA (Cortex Analyst):
+      - Buat tabel data perbankan sintetis:
+        * FACT_TRANSACTIONS (transaksi harian: transfer, tarik tunai, setor)
+        * DIM_CUSTOMERS (data nasabah: segmen, cabang, kota)
+        * DIM_BRANCHES (data cabang: region, kota, tipe)
+        * FACT_LOANS (data kredit: outstanding, NPL, tenor, bunga)
+        * FACT_DEPOSITS (data simpanan: tabungan, deposito, giro)
+      - Buat Semantic View dengan metrics relevan:
+        * Total Dana Pihak Ketiga (DPK)
+        * Non-Performing Loan (NPL) Ratio
+        * Loan to Deposit Ratio (LDR)
+        * Jumlah nasabah aktif per cabang
+        * Volume transaksi digital vs konvensional
+      - Peserta bisa tanya: "Berapa NPL ratio bulan lalu di region Jawa Barat?"
+   
+   C) CORTEX AGENT (Gabungan keduanya):
+      - Agent yang bisa switching antara SOP docs dan data terstruktur
+      - Demo: "Jelaskan prosedur restrukturisasi kredit dan berapa jumlah
+        kredit yang perlu direstrukturisasi bulan ini"
+      -> Agent ambil SOP dari Cortex Search + data dari Cortex Analyst
+   
+   D) SNOWFLAKE INTELLIGENCE:
+      - Publish agent sebagai aplikasi yang bisa dipakai business user
+      - Simulasi: Relationship Manager di cabang pakai AI assistant untuk
+        menjawab pertanyaan nasabah dan cek data portofolio
+
+>> AHA MOMENT:
+   Peserta melihat bahwa dalam 1 session, mereka bisa bangun AI assistant
+   yang menggabungkan knowledge base dokumen + data warehouse, tanpa perlu
+   infra ML terpisah, tanpa API external LLM, semua di dalam Snowflake.
+
+>> DATA YANG PERLU DISIAPKAN:
+   - 5-10 dokumen PDF SOP perbankan (sintetis, dalam Bahasa Indonesia)
+   - Dataset sintetis 100K-500K rows transaksi
+   - Semantic model YAML yang sudah di-design dengan baik
+
+================================================================================
+DAY 1 - SESSION 2: Data Protection Policies
+================================================================================
+
+TEMA: "Proteksi Data Nasabah Sesuai Regulasi OJK & UU PDP"
+
+>> IDE SKENARIO:
+   Simulasi governance di bank dengan multiple roles dan branch-level access.
+   
+   A) SETUP ROLES (Banking Hierarchy):
+      - BANK_ADMIN (setara IT Security)
+      - COMPLIANCE_OFFICER (audit & kepatuhan)
+      - BRANCH_MANAGER_JKT (cabang Jakarta)
+      - BRANCH_MANAGER_SBY (cabang Surabaya)  
+      - TELLER_ROLE (frontliner)
+      - DATA_ANALYST (tim data/BI)
+      - RISK_ANALYST (tim risiko)
+   
+   B) DATA MASKING - Skenario Realistis:
+      - Kolom NIK/KTP: masked jadi "327XXXXXXXXX01" untuk analyst
+      - Kolom No Rekening: partial mask "123-XX-XXXX-789"
+      - Kolom Nama Nasabah: full mask untuk teller, visible untuk compliance
+      - Kolom Saldo: range masking (tampilkan range, bukan exact number)
+        untuk analyst, exact untuk branch manager
+      - Conditional masking: COMPLIANCE_OFFICER bisa lihat semua,
+        DATA_ANALYST hanya lihat data ter-mask
+      - Tag-based masking: tag "PII" otomatis apply masking policy
+   
+   C) ROW ACCESS POLICY - Branch Segregation:
+      - BRANCH_MANAGER_JKT hanya lihat nasabah cabang Jakarta
+      - BRANCH_MANAGER_SBY hanya lihat nasabah cabang Surabaya
+      - Mapping table: ROLE <-> BRANCH_CODE <-> REGION
+      - Demo: login sebagai role berbeda, data yang muncul berbeda
+      - Skenario: "Setiap Regional Head hanya bisa akses data region-nya"
+   
+   D) PROJECTION POLICY - Anti Bulk Extraction:
+      - Kolom NIK tidak bisa di-SELECT tanpa WHERE clause
+      - Analyst HARUS specify filter (misal WHERE branch = 'Jakarta')
+      - Mencegah: SELECT NIK, NAMA FROM NASABAH (bulk download semua data)
+      - Mengizinkan: SELECT NIK, NAMA FROM NASABAH WHERE ACCOUNT_ID = 'xxx'
+      - Ini sangat relevan untuk compliance UU Perlindungan Data Pribadi (PDP)
+
+>> AHA MOMENT:
+   Demo live: switch antar role, peserta langsung lihat perbedaan data
+   yang tampil. "Satu tabel, tapi setiap role melihat data yang berbeda."
+   Ini langsung menjawab kebutuhan segregation of duties di perbankan.
+
+>> KONEKSI KE REGULASI:
+   - UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (UU PDP)
+   - POJK tentang Tata Kelola TI Bank Umum
+   - Prinsip Least Privilege & Need-to-Know basis
+
+================================================================================
+DAY 2 - SESSION 3: End-to-End Machine Learning
+================================================================================
+
+TEMA: "Credit Scoring Model untuk Kredit UMKM"
+
+>> IDE SKENARIO:
+   Build credit scoring model end-to-end, sangat relevan karena Bank Mandiri
+   fokus ke lending UMKM via Livin' Merchant (cash-flow based lending).
+
+   A) DATA PREPARATION (Snowflake Notebook):
+      - Dataset sintetis: data pengajuan kredit UMKM
+        * Fitur: omzet_bulanan, lama_usaha, jumlah_karyawan, sektor_usaha,
+          lokasi, riwayat_kredit, jumlah_transaksi_digital, saldo_rata2,
+          frekuensi_transaksi, rasio_tabungan
+        * Target: STATUS_KREDIT (Lancar/DPK/Kurang Lancar/Diragukan/Macet)
+          atau binary: DEFAULT / NON-DEFAULT
+      - EDA dengan visualisasi di Notebook
+      - Data cleaning dan transformasi dengan Snowpark Python
+   
+   B) FEATURE ENGINEERING & FEATURE STORE:
+      - Buat features yang relevan untuk perbankan:
+        * avg_monthly_transaction_amount (rata-rata transaksi bulanan)
+        * transaction_frequency_trend (tren frekuensi 3 bulan terakhir)
+        * saving_ratio (rasio tabungan vs pengeluaran)
+        * digital_engagement_score (seberapa aktif di channel digital)
+        * credit_utilization_ratio
+      - Register ke Snowflake Feature Store
+      - Tunjukkan feature versioning & discovery
+   
+   C) MODEL TRAINING:
+      - Train XGBoost classifier untuk credit scoring
+      - Hyperparameter tuning
+      - Model evaluation: AUC-ROC, precision-recall (penting untuk banking:
+        cost of false negative >> cost of false positive)
+      - SHAP values untuk explainability -> WAJIB untuk regulasi OJK
+        (model harus bisa dijelaskan kenapa approve/reject)
+   
+   D) MODEL REGISTRY & DEPLOYMENT:
+      - Log model ke Snowflake Model Registry
+      - Versioning: v1 (baseline), v2 (tuned)
+      - Batch inference: scoring semua aplikasi kredit pending
+      - Real-time inference via REST API: scoring saat nasabah apply online
+   
+   E) ML OBSERVABILITY & LINEAGE:
+      - Monitor model drift: distribusi fitur berubah seiring waktu
+      - Alerting: jika accuracy turun di bawah threshold
+      - ML Lineage: trace dari source data -> features -> dataset -> model
+      - Ini KRUSIAL untuk audit OJK: "Dari mana data model ini berasal?"
+
+>> AHA MOMENT:
+   Peserta bisa build credit scoring model yang production-ready dalam
+   satu session, lengkap dengan explainability (SHAP) dan lineage.
+   Bandingkan dengan proses tradisional yang butuh berbulan-bulan.
+
+>> KONEKSI KE BANK MANDIRI:
+   - Mereka sudah pakai AI untuk fraud detection (85% reduction)
+   - Credit scoring adalah natural next step
+   - Livin' Merchant menghasilkan data UMKM real-time -> perfect untuk
+     cash-flow based lending model
+
+================================================================================
+DAY 2 - SESSION 4: Accelerating ML with Cortex Code
+================================================================================
+
+TEMA: "From Zero to ML Model dengan Natural Language"
+
+>> IDE SKENARIO:
+   Live demo menggunakan Cortex Code (Snowsight + CLI) untuk accelerate
+   semua yang sudah dipelajari di Session 1-3.
+
+   A) CORTEX CODE IN SNOWSIGHT:
+      - Demo: ketik natural language -> generate SQL query
+        * "Buatkan query untuk menghitung NPL ratio per cabang bulan lalu"
+        * "Tampilkan top 10 nasabah dengan saldo terbesar di region Jakarta"
+      - Code explanation: paste query kompleks -> CoCo jelaskan
+      - Quick fix: intentionally buat error -> CoCo fix
+   
+   B) BUILDING ML MODEL WITH CORTEX CODE (Live Demo):
+      - Mulai dari nol, hanya menggunakan natural language prompts:
+        1. "Generate synthetic customer churn data for a bank"
+        2. "Create feature store definitions for churn prediction"
+        3. "Train an XGBoost model and register it"
+        4. "Create a Streamlit app to visualize model results"
+      - Tunjukkan bahwa Cortex Code aware dengan Snowflake ecosystem
+      - Peserta ikut hands-on: mereka coba sendiri dengan use case berbeda
+   
+   C) ADVANCED USE CASES:
+      - Cortex Code untuk data governance: "Create masking policy for PII"
+      - Cortex Code untuk debugging: "Why is my query slow?"
+      - Cortex Code untuk documentation: generate docs dari existing code
+   
+   D) HANDS-ON CHALLENGE (15-20 menit):
+      - Beri tantangan ke peserta:
+        "Gunakan Cortex Code untuk membangun fraud detection model sederhana"
+      - Peserta bebas explore, bisa tanya CoCo apapun
+      - Ini jadi penutup yang memorable dan engaging
+
+>> AHA MOMENT:
+   Peserta realize bahwa dengan Cortex Code, barrier to entry untuk
+   data engineering & ML di Snowflake jadi sangat rendah. Bahkan orang
+   yang bukan engineer bisa mulai explore data dan build model.
+
+================================================================================
+REKOMENDASI DATASET SINTETIS YANG PERLU DISIAPKAN
+================================================================================
+
+1. DIM_NASABAH (10,000 rows)
+   - nasabah_id, nama, nik, no_hp, email, tanggal_lahir, jenis_kelamin
+   - segmen (Retail/Priority/Private/SME/Corporate)
+   - cabang_id, tanggal_buka_rekening, status_aktif
+
+2. DIM_CABANG (100 rows)
+   - cabang_id, nama_cabang, kota, provinsi, region
+   - tipe (KC/KCP/KK), jumlah_karyawan
+
+3. FACT_TRANSAKSI (500,000 rows)
+   - transaksi_id, nasabah_id, tanggal, jenis_transaksi
+   - (Transfer/Tarik Tunai/Setor/Pembayaran/Top Up)
+   - jumlah, channel (Livin/ATM/Teller/Kopra/EDC)
+
+4. FACT_KREDIT (5,000 rows)
+   - kredit_id, nasabah_id, jenis_kredit, jumlah_pinjaman
+   - tenor, suku_bunga, tanggal_pencairan, status_kolektibilitas
+   - (1-Lancar, 2-DPK, 3-Kurang Lancar, 4-Diragukan, 5-Macet)
+
+5. FACT_SIMPANAN (15,000 rows)
+   - simpanan_id, nasabah_id, jenis (Tabungan/Deposito/Giro)
+   - saldo, suku_bunga, tanggal_buka
+
+6. DOC_SOP_BANK (5-10 PDF files)
+   - SOP Pembukaan Rekening
+   - Panduan KYC
+   - Kebijakan Kredit UMKM
+   - Prosedur Restrukturisasi
+   - Panduan Anti Money Laundering
+
+================================================================================
+REKOMENDASI FLOW WORKSHOP
+================================================================================
+
+DAY 1 (Pagi):
+  09:00 - 09:30  Opening & Ice Breaking
+  09:30 - 10:00  Overview Snowflake Platform (quick demo Snowsight)
+  10:00 - 12:00  Session 1: RAG + Cortex AI + Snowflake Intelligence
+  12:00 - 13:00  Lunch Break
+
+DAY 1 (Siang):
+  13:00 - 15:00  Session 2: Data Protection Policies (hands-on)
+  15:00 - 15:15  Coffee Break
+  15:15 - 16:00  Session 2 lanjutan + Q&A
+  16:00 - 16:30  Day 1 Recap & Preview Day 2
+
+DAY 2 (Pagi):
+  09:00 - 09:15  Day 1 Recap
+  09:15 - 12:00  Session 3: End-to-End ML
+  12:00 - 13:00  Lunch Break
+
+DAY 2 (Siang):
+  13:00 - 14:30  Session 4: Cortex Code
+  14:30 - 15:00  Hands-on Challenge
+  15:00 - 15:15  Coffee Break
+  15:15 - 16:00  Showcase hasil challenge + Closing + Next Steps
+
+================================================================================
+TIPS TAMBAHAN
+================================================================================
+
+1. SETIAP PESERTA HARUS PUNYA AKUN SNOWFLAKE TRIAL
+   - Siapkan guide setup sebelum workshop
+   - Atau siapkan shared environment dengan role-role yang sudah di-setup
+
+2. CHEAT SHEET / QUICK REFERENCE
+   - Siapkan 1-2 halaman cheat sheet per session
+   - SQL commands yang sering dipakai
+   - Link ke dokumentasi Snowflake
+
+3. BAHASA
+   - Presentasi bisa mix English-Indonesia
+   - Dokumen SOP dan nama kolom sebaiknya Bahasa Indonesia agar relatable
+   - Komentar kode bisa English
+
+4. BACKUP PLAN
+   - Siapkan screenshot/recording jika ada masalah koneksi
+   - Pre-build beberapa step agar tidak buang waktu di troubleshooting
+
+5. TAKEAWAY UNTUK PESERTA
+   - Semua script SQL & Python yang dipakai di workshop
+   - Link ke Snowflake documentation
+   - Arsitektur diagram yang menunjukkan apa yang mereka bangun
+
+================================================================================
+CATATAN PENUTUP
+================================================================================
+
+Workshop ini sangat solid dan comprehensive. Dengan menggunakan skenario
+perbankan yang realistis (bukan generic dataset), tim data Bank Mandiri akan
+langsung melihat bagaimana Snowflake bisa solve masalah mereka sehari-hari:
+
+- Governance & compliance (UU PDP, OJK) -> Session 2
+- AI/ML tanpa infra terpisah -> Session 1 & 3
+- Democratisasi data & AI -> Session 4 (Cortex Code)
+- Unified platform (no data movement) -> All sessions
+
+Saya siap bantu mempersiapkan semua materi hands-on, dataset sintetis,
+SQL scripts, Python notebooks, dan Semantic Views yang dibutuhkan.
+
+Semangat Mas! Workshop ini pasti akan luar biasa.
+
+- CoCo
+================================================================================

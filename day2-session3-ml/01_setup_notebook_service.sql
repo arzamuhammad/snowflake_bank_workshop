@@ -1,5 +1,5 @@
 -- =============================================================================
--- Snowflake Notebook Service Setup for Bank Nusantara Workshop
+-- Snowflake Notebook Service Setup for Bank Workshop
 -- =============================================================================
 -- Purpose: Provision GPU compute pool + PyPI access integration to power the
 --          BANK_SERVICE_1 notebook service used by credit_scoring_ml.ipynb.
@@ -27,7 +27,7 @@ CREATE COMPUTE POOL IF NOT EXISTS GPU_POOL_S
     INSTANCE_FAMILY = GPU_NV_S
     AUTO_RESUME = TRUE
     AUTO_SUSPEND_SECS = 3600
-    COMMENT = 'GPU compute pool (GPU_NV_S) for Bank Nusantara ML notebook service';
+    COMMENT = 'GPU compute pool (GPU_NV_S) for Bank ML notebook service';
 
 -- -----------------------------------------------------------------------------
 -- Step 2: Create PyPI network rule + external access integration
@@ -39,7 +39,7 @@ CREATE OR REPLACE NETWORK RULE BANK_DB.PUBLIC.PYPI_NETWORK_RULE
     TYPE = HOST_PORT
     MODE = EGRESS
     VALUE_LIST = ('pypi.org', 'pypi.python.org', 'pythonhosted.org', 'files.pythonhosted.org')
-    COMMENT = 'Allow egress to PyPI for Bank Nusantara ML notebooks';
+    COMMENT = 'Allow egress to PyPI for Bank ML notebooks';
 
 CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION BANK_PYPI_ACCESS_INTEGRATION
     ALLOWED_NETWORK_RULES = (BANK_DB.PUBLIC.PYPI_NETWORK_RULE)
