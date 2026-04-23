@@ -371,6 +371,18 @@ SELECT PARSE_JSON(
 ) AS results;
 ```
 
+### Step 2.5: Konfigurasi Cortex Search di Agent (Snowflake Intelligence)
+
+Saat **Add Cortex Search Service** di Agent UI, isi:
+
+| Field | Value | Keterangan |
+|-------|-------|------------|
+| **Search service** | `BANK_DB.ANALYTICS.BANK_SOP_SEARCH` | Service yang baru dibuat |
+| **ID column** | `FILE_URL` | Unik per chunk, digunakan untuk deduplikasi & link balik ke file |
+| **Title column** | `FILE_NAME` | Akan tampil sebagai judul citation di jawaban agent |
+
+> **Catatan:** `FILE_URL` dan `FILE_NAME` otomatis tersedia karena kedua kolom ini di-`SELECT` saat membuat search service di Step 2.3.
+
 ---
 
 ## Part 3: Structured Data & Semantic View (Cortex Analyst)
